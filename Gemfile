@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+gem 'rake'
 gem 'shoulda', '2.11.3'
 gem 'activerecord', '~> 2.2'
 gem 'mocha'
