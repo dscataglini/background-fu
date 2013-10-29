@@ -56,11 +56,19 @@ class Job < ActiveRecord::Base
   end
   
   def invoke_worker
-    self.result = @worker.send(worker_method, *args)
+    self.result = invoke_method
     self.state  = "finished"
     logger.info("BackgroundFu: Job finished. Job(id: #{id}).")
   end
-  
+
+  def invoke_method
+    last_method, *methods = worker_method.split(/\./).reverse
+    Array(methods).reverse.reduce(@worker) do |a, e|
+      res = a.send(e)
+      res
+    end.send(last_method, *args)
+  end
+
   def rescue_worker(exception)
     self.result = [exception.message, exception.backtrace.join("\n")].join("\n\n")
     self.state  = "failed"
