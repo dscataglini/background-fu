@@ -14,7 +14,6 @@ end
 class JobTest < Test::Unit::TestCase
 
   def setup
-    ActiveRecord::Base.allow_concurrency = false
     @job = Job.new
   end
 
