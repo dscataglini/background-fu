@@ -1,0 +1,5 @@
+source 'https://rubygems.org'
+gem 'shoulda', '2.11.3'
+gem 'activerecord', '~> 2.2'
+gem 'mocha'
+gem 'sqlite3'
