@@ -1,5 +1,5 @@
 # Example:
-# 
+#
 # job = Job.enqueue!(MyWorker, :my_method, "my_arg_1", "my_arg_2")
 class Job < ActiveRecord::Base
 
@@ -11,9 +11,9 @@ class Job < ActiveRecord::Base
 
   before_create :setup_state, :setup_priority, :setup_start_at
   validates_presence_of :worker_class, :worker_method
-  
+
   attr_readonly :worker_class, :worker_method, :args
-  
+
   def self.enqueue!(worker_class, worker_method, *args)
     job = create!(
       :worker_class  => worker_class.to_s,
@@ -22,7 +22,7 @@ class Job < ActiveRecord::Base
     )
 
     logger.info("BackgroundFu: Job enqueued. Job(id: #{job.id}, worker: #{worker_class}, method: #{worker_method}, argc: #{args.size}).")
-    
+
     job
   end
 
@@ -35,26 +35,26 @@ class Job < ActiveRecord::Base
   ensure
     ensure_worker
   end
-  
+
   # Restart a failed job.
   def restart!
-    if failed? 
+    if failed?
       update_attributes!(
-        :result     => nil, 
-        :progress   => nil, 
-        :started_at => nil, 
+        :result     => nil,
+        :progress   => nil,
+        :started_at => nil,
         :state      => "pending"
       )
       logger.info("BackgroundFu: Job restarted. Job(id: #{id}).")
     end
   end
-  
+
   def initialize_worker
     update_attributes!(:started_at => Time.now, :state => "running")
     @worker = worker_class.constantize.new
     logger.info("BackgroundFu: Job initialized. Job(id: #{id}).")
   end
-  
+
   def invoke_worker
     self.result = invoke_method
     self.state  = "finished"
@@ -74,7 +74,7 @@ class Job < ActiveRecord::Base
     self.state  = "failed"
     logger.info("BackgroundFu: Job failed. Job(id: #{id}).")
   end
-  
+
   def ensure_worker
     self.progress = @worker.instance_variable_get("@progress")
     save!
@@ -89,7 +89,7 @@ class Job < ActiveRecord::Base
     logger.info "BackgroundFu: Cleaning up finished jobs."
     Job.destroy_all(["state='finished' and updated_at < ?", 1.week.ago])
   end
-  
+
   def self.generate_state_helpers
     states.each do |state_name|
       define_method("#{state_name}?") do
@@ -107,21 +107,21 @@ class Job < ActiveRecord::Base
   def setup_state
     return unless state.blank?
 
-    self.state = "pending" 
+    self.state = "pending"
   end
-  
+
   # Default priority is 0. Jobs will be executed in descending priority order (negative priorities allowed).
   def setup_priority
     return unless priority.blank?
-    
+
     self.priority = 0
   end
-  
+
   # Job will be executed after this timestamp.
   def setup_start_at
     return unless start_at.blank?
-    
+
     self.start_at = Time.now
   end
 
-end  
+end
